@@ -20,3 +20,12 @@ class SignUp(BaseModel):
                 "is_staff": False,
             }
         }
+
+
+class Login(BaseModel):
+    username: str
+    password: str
+
+
+class Settings(BaseModel):
+    authjwt_secret_key: str = '24084df22271e59fa98e57a3ae3cf18315e80c8dbb5748b8792ce4db86f73f6'
