@@ -1,26 +1,18 @@
 from fastapi import FastAPI
+from database import engine
+from models import Base
 from auth_routers import auth_router
 
 
 app = FastAPI()
 
+Base.metadata.create_all(bind=engine)
 
 app.include_router(auth_router)
 
-
-
 @app.get("/")
-async def get_home():
-    return {"message": "Hello FastAPI"}
-
-
-
-
-
-
-
-
-
+async def read_root():
+    return {"message": "Welcome to the API"}
 
 
 
