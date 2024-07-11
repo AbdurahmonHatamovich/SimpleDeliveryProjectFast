@@ -25,3 +25,37 @@ class SignUp(BaseModel):
 class Login(BaseModel):
     username_or_email: str
     password: str
+
+
+class OrderModel(BaseModel):
+    id: Optional[int]
+    quantity: int = Field(..., gt=0)
+    order_statuses: Optional[str] = "PENDING"
+    user_id: Optional[int]
+    product_id: int
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "quantity": 2,
+                "order_statuses": "PENDING",
+                "product_id": 1
+            }
+        }
+
+
+
+class ProductModel(BaseModel):
+    id: Optional[int]
+    name: str
+    price: int
+
+    class Config:
+        orm_model = True
+        schema_extra = {
+            "example": {
+                "name": "Uzbek plov",
+                "price": 30000
+            }
+        }

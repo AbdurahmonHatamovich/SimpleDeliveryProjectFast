@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta, datetime
-
-from database import SessionLocal
+from database import session,engine
 from models import User
 from schemas import SignUp, Login
 
@@ -21,6 +20,7 @@ def get_config():
 auth_router = APIRouter(
     prefix="/auth"
 )
+session = session(bind=engine)
 
 @auth_router.get('/')
 async def get_auth(Authorize: AuthJWT = Depends()):
@@ -32,8 +32,6 @@ async def get_auth(Authorize: AuthJWT = Depends()):
 
 @auth_router.post('/signup', status_code=201)
 async def signup(user: SignUp):
-    session = SessionLocal()
-
     db_email = session.query(User).filter(User.email == user.email).first()
     if db_email is not None:
         return {'message': 'Email already exists', 'status_code': status.HTTP_400_BAD_REQUEST}
@@ -59,7 +57,6 @@ async def signup(user: SignUp):
 
 @auth_router.post('/login', status_code=200)
 async def login(user: Login, Authorize: AuthJWT = Depends()):
-    session = SessionLocal()
     db_user = session.query(User).filter(
         or_(
             User.username == user.username_or_email,
@@ -86,7 +83,6 @@ async def login(user: Login, Authorize: AuthJWT = Depends()):
 
 @auth_router.get('/login/refresh')
 async def refresh_token(Authorize: AuthJWT = Depends()):
-    session = SessionLocal()
     try:
         access_lifetime = timedelta(minutes=60)
         refresh_lifetime = timedelta(days=3)

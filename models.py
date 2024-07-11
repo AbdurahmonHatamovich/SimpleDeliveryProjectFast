@@ -1,9 +1,7 @@
 from database import Base
-from sqlalchemy import Column, Integer, String, Text, ForeignKey,Boolean,DateTime,Enum
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-
-
-
+from sqlalchemy_utils import ChoiceType
 
 class User(Base):
     __tablename__ = 'users'
@@ -14,44 +12,35 @@ class User(Base):
     password = Column(Text)
     is_staff = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    orders = relationship('Order', back_populates='user')
 
     def __repr__(self):
         return f'<User(username={self.username}, email={self.email})>'
 
+class Order(Base):
+    ORDER_STATUSES = (
+        ('PENDING', "pending"),
+        ('IN_TRANSIT', "in_transit"),
+        ('DELIVERED', "delivered")
+    )
+    __tablename__ = 'orders'
+    id = Column(Integer, primary_key=True)
+    quantity = Column(Integer, nullable=False)
+    order_status = Column(ChoiceType(choices=ORDER_STATUSES), default="PENDING")
+    user_id = Column(Integer, ForeignKey('users.id'))  # corrected table name
+    user = relationship('User', back_populates='orders')
+    product_id = Column(Integer, ForeignKey('products.id'))
+    product = relationship('Product', back_populates='orders')
 
-class Author(Base):
-    __tablename__ = 'authors'
+    def __repr__(self):
+        return f"<Order {self.id}>"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
+class Product(Base):
+    __tablename__ = 'products'  # corrected table name
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100))
+    price = Column(Integer)
+    orders = relationship('Order', back_populates='product')
 
-    books = relationship("Book", back_populates="author")
-
-
-class Book(Base):
-    __tablename__ = 'books'
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(Text)
-    published_date = Column(DateTime)
-    author_id = Column(Integer, ForeignKey('authors.id'))
-
-    author = relationship("Author", back_populates="books")
-    reviews = relationship("Review", back_populates="book")
-
-
-class Review(Base):
-    __tablename__ = 'reviews'
-
-    id = Column(Integer, primary_key=True, index=True)
-    text = Column(Text)
-    rating = Column(Integer)
-    book_id = Column(Integer, ForeignKey('books.id'))
-
-    book = relationship("Book", back_populates="reviews")
-
-
-
-
-
+    def __repr__(self):
+        return f"<Product {self.name}>"
